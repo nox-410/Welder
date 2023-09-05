@@ -10,11 +10,14 @@ from ..utils import CompileResult
 from ..header import tvm_rt_header
 
 _global_dict: Dict[str, CompileResult] = {}
-
+_extern_libs = set()
 _source_mod_cache = {}
 
 def add_source(key, cpresult: CompileResult) -> None:
     _global_dict[key] = cpresult
+
+def add_extern_lib(name) -> None:
+    _extern_libs.add(name)
 
 def create_tvm_link_code(tvm_symbol, symbol, num_params):
     def_args = ", ".join([f"DLTensor* args{i}" for i in range(num_params)])
@@ -66,7 +69,7 @@ def call_cuda_compile(output, objects, options=None, cc="nvcc"):
         if proc.returncode != 0:
             msg = proc.stdout.read().decode('utf-8')
             raise RuntimeError("Compilation error: " + msg)
-    subprocess.run(["nvcc", "--shared", *objects_to_link, "-o", output], check=True)
+    subprocess.run(["nvcc", "--shared", *objects_to_link, *_extern_libs, "-o", output], check=True)
     for obj in temp_objs:
         os.remove(obj)
 

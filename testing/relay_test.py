@@ -12,6 +12,8 @@ def run(prefix, arch):
     onnx_model = onnx.load(osp.join(prefix, "model.onnx"))
     mod, params = relay.frontend.from_onnx(onnx_model, convert_config={"use_welder_matmul": not args.cublas})
     mod = relay.transform.SimplifyInference()(mod) # remove BN, dropout ...
+    if args.mha:
+        mod = welder.relay.transform.MHARewritePass()(mod)
 
     if args.cublas:
         from tvm.relay.op.contrib.cublas import pattern_table
@@ -65,6 +67,7 @@ if __name__ == "__main__":
     parser.add_argument('--cublas', action="store_true")
     parser.add_argument('--cudnn', action="store_true")
     parser.add_argument('--nhwc', action="store_true")
+    parser.add_argument('--mha', action="store_true")
     args = parser.parse_args()
     arch = welder.arch.__getattribute__(args.arch)()
     run(args.prefix, arch)
