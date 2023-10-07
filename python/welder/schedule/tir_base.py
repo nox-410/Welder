@@ -7,13 +7,14 @@ from tvm import te, tir
 from ..config import Stride
 from ..IRpass import *
 from .scheduler_base import SchedulerBase
+from tvm.tir.transform import Simplify
 
 
 class TIRSchedulerBase(SchedulerBase):
     def create_schedule(self) -> tir.Schedule:
         workload = te.create_prim_func(self.args)
         ir_module = tvm.IRModule({"main": workload})
-        return tir.Schedule(ir_module)
+        return tir.Schedule(Simplify()(ir_module))
 
     def debug_schedule(self):
         print(self.sche.mod["main"].script())
