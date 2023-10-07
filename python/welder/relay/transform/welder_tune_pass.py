@@ -144,7 +144,7 @@ class TileGraphExtractor(relay.ExprVisitor):
             self.ordered_nodes.append(node)
             self.node_map[node] = call
         elif isinstance(call.op, ir.expr.GlobalVar):
-            args = None
+            args = call.checked_type
             op_name = "Opaque" + "_" + str(len(self.ordered_nodes))
             node = IRNode(node_inputs, args, op_name)
             node.add_tag("skip", True)
