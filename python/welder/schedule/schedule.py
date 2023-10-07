@@ -4,7 +4,7 @@ from tvm import te
 
 from ..config import Config, Stride
 from ..te_utils import get_compute_ops, seperate_reduce_ops
-from .te_elementwise import *
+from .tir_elementwise import *
 from .te_reduce import *
 from .te_reduce_interthread import *
 from .te_wmma import *
@@ -24,7 +24,7 @@ def schedule(args: List[te.Tensor], config: Config, shared_inputs: List[te.Tenso
 
     if len(reduces_ops) == 0:
         assert(not schedule_on_inner_stage)
-        template = TEElementWiseScheduler
+        template = TIRElementWiseScheduler
     elif config.use_tc and config.use_cutlass:
         template = TIRCutlassMMAScheduler
     elif config.use_tc and not config.use_cutlass:
